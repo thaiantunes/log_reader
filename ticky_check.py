@@ -34,24 +34,20 @@ users = {}
 for line in text:
     a = re.search(r"ticky: (.*?) .*\((.*)\)", line)
     if a:
-        if a.group(2) not in users and a.group(1) == "ERROR":
-            users[a.group(2)] = [0,1]
-        elif a.group(2) not in users and a.group(1) == "INFO":
-            users[a.group(2)] = [1,0]
-        elif a.group(1) == "ERROR":
-            users[a.group(2)][1] =  users[a.group(2)][1] + 1
-        elif a.group(1) == "INFO":
-            users[a.group(2)][0] =  users[a.group(2)][0] + 1
+        user = a.group(2)
+        msg_class = a.group(1)
+        if user not in users:
+            users[user] = {}
+            users[user][msg_class] = 1
+        
+        elif msg_class not in users[user]:
+            users[user][msg_class] = 1
+        else:
+            users[user][msg_class] += 1
 
-sorted_users = sorted(users.items())
-
-per_user = []
-
-for i in sorted_users:
-    per_user.append((i[0], i[1][0], i[1][1]))
-
+#save users and statistics to a csv file
 with open('user_statistics.csv','w') as out2:
     csv_out=csv.writer(out2)
     csv_out.writerow(["Username", "INFO", "ERROR"])
-    for row in per_user:
-        csv_out.writerow(row)
+    for row in users:
+        csv_out.writerow([row, users[row].get('INFO',0), users[row].get('ERROR',0)])
